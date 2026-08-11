@@ -3,7 +3,7 @@ import MessageList from "./MessageList";
 import MessageInput from "./MessageInput";
 import { useChat } from "../../hooks/useChat";
 
-function ChatWindow() {
+function ChatWindow({ onBack }) {
   const {
     selectedConversation,
     messages,
@@ -31,7 +31,7 @@ function ChatWindow() {
 
   return (
     <div className="flex h-full flex-col">
-      <ChatHeader receiver={selectedConversation.receiver} />
+      <ChatHeader receiver={selectedConversation.receiver} onBack={onBack} />
 
       <MessageList
         messages={messages}

@@ -2,6 +2,7 @@ import { useChat } from "../hooks/useChat";
 
 import ChatSidebar from "../components/chat/ChatSidebar";
 import ChatWindow from "../components/chat/ChatWindow";
+import { useState } from "react";
 
 function ChatPage() {
   const {
@@ -12,23 +13,40 @@ function ChatPage() {
     error,
   } = useChat();
 
+  const [showChat, setShowChat] = useState(false);
+
+  const handleSelectConversation = async (conversation) => {
+    await selectConversation(conversation);
+
+    // On mobile, show ChatWindow after selecting a conversation
+    setShowChat(true);
+  };
+
+  const handleBackToSidebar = () => {
+    setShowChat(false);
+  };
+
   return (
     <div className="h-screen bg-gray-100">
       <div className="mx-auto flex h-full max-w-7xl overflow-hidden bg-white shadow-sm">
-        {/* Sidebar */}
-        <div className="w-full border-r border-gray-200 md:w-80 lg:w-96">
+        {/* Chat Sidebar */}
+        <div
+          className={`w-full border-r border-gray-200 md:block md:w-80 lg:w-96 ${showChat ? "hidden" : "block"}`}
+        >
           <ChatSidebar
             conversations={conversations}
             selectedConversation={selectedConversation}
-            onSelectConversation={selectConversation}
+            onSelectConversation={handleSelectConversation}
             loading={loadingConversations}
             error={error}
           />
         </div>
 
         {/* Chat Window */}
-        <div className="hidden flex-1 md:block">
-          <ChatWindow />
+        <div
+          className={`w-full flex-1 ${showChat ? "block" : "hidden"} md:block`}
+        >
+          <ChatWindow onBack={handleBackToSidebar} />
         </div>
       </div>
     </div>

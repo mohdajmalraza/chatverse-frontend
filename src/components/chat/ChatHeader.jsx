@@ -1,11 +1,34 @@
 import { FiMoreVertical } from "react-icons/fi";
 import { IoCallOutline } from "react-icons/io5";
 
-function ChatHeader({ receiver }) {
+function ChatHeader({ receiver, onBack }) {
   return (
     <div className="flex items-center justify-between border-b border-gray-200 bg-white px-5 py-3">
-      {/* User */}
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-2">
+        {/* Back button - mobile only */}
+        <button
+          type="button"
+          onClick={onBack}
+          className="rounded-full p-2 text-gray-600 hover:bg-gray-100 md:hidden"
+          aria-label="Back to conversations"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className="h-5 w-5"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            strokeWidth="2"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M15 19l-7-7 7-7"
+            />
+          </svg>
+        </button>
+
+        {/* Avatar */}
         <div className="relative">
           <img
             src={receiver?.avatar || "https://i.pravatar.cc/150?img=12"}
@@ -17,6 +40,7 @@ function ChatHeader({ receiver }) {
           {/* <span className="absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-white bg-green-500" /> */}
         </div>
 
+        {/* User info */}
         <div>
           <h2 className="text-sm font-semibold text-gray-900">
             {receiver?.name}
