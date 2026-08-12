@@ -3,6 +3,7 @@ import { useChat } from "../hooks/useChat";
 import ChatSidebar from "../components/chat/ChatSidebar";
 import ChatWindow from "../components/chat/ChatWindow";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 function ChatPage() {
   const {
@@ -14,12 +15,19 @@ function ChatPage() {
   } = useChat();
 
   const [showChat, setShowChat] = useState(false);
+  const navigate = useNavigate();
 
-  const handleSelectConversation = async (conversation) => {
-    await selectConversation(conversation);
+  // const handleSelectConversation = async (conversation) => {
+  //   await selectConversation(conversation);
 
-    // On mobile, show ChatWindow after selecting a conversation
-    setShowChat(true);
+  //   // On mobile, show ChatWindow after selecting a conversation
+  //   setShowChat(true);
+  // };
+
+  const handleSelectConversation = (conversation) => {
+    navigate(`/chat?conversation=${conversation.conversationId}`);
+
+    selectConversation(conversation);
   };
 
   const handleBackToSidebar = () => {

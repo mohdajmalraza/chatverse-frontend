@@ -162,40 +162,70 @@ export const ChatProvider = ({ children }) => {
   /*
    * Create or get conversation
    */
-  const createConversation = useCallback(
-    async (receiverId) => {
-      try {
-        setError("");
+  // const createConversation = useCallback(
+  //   async (receiverId) => {
+  //     try {
+  //       setError("");
 
-        const conversation = await createConversationApi(receiverId);
+  //       const conversation = await createConversationApi(receiverId);
 
-        setConversations((previousConversations) => {
-          const exists = previousConversations.some(
-            (item) => item.conversationId === conversation.conversationId,
-          );
+  //       setConversations((previousConversations) => {
+  //         const exists = previousConversations.some(
+  //           (item) => item.conversationId === conversation.conversationId,
+  //         );
 
-          if (exists) {
-            return previousConversations;
-          }
+  //         if (exists) {
+  //           return previousConversations;
+  //         }
 
-          return [conversation, ...previousConversations];
-        });
+  //         return [conversation, ...previousConversations];
+  //       });
 
-        await selectConversation(conversation);
+  //       await selectConversation(conversation);
 
-        return conversation;
-      } catch (error) {
-        console.error(error);
+  //       return conversation;
+  //     } catch (error) {
+  //       console.error(error);
 
-        setError(
-          error.response?.data?.message || "Failed to create conversation.",
+  //       setError(
+  //         error.response?.data?.message || "Failed to create conversation.",
+  //       );
+
+  //       throw error;
+  //     }
+  //   },
+  //   [selectConversation],
+  // );
+
+  const createConversation = useCallback(async (receiverId) => {
+    try {
+      setError("");
+
+      const conversation = await createConversationApi(receiverId);
+
+      setConversations((previousConversations) => {
+        const existingConversation = previousConversations.find(
+          (item) => item.conversationId === conversation.conversationId,
         );
 
-        throw error;
-      }
-    },
-    [selectConversation],
-  );
+        if (existingConversation) {
+          return previousConversations;
+        }
+
+        return [conversation, ...previousConversations];
+      });
+
+      return conversation;
+    } catch (error) {
+      console.error(error);
+
+      setError(
+        error.response?.data?.message || "Failed to create conversation.",
+      );
+
+      throw error;
+    }
+  }, []);
 
   /*
    * Clear chat state

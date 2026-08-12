@@ -1,5 +1,7 @@
-import { FiMoreVertical, FiSearch } from "react-icons/fi";
+import { FiEdit3, FiMoreVertical, FiSearch } from "react-icons/fi";
 import ConversationItem from "./ConversationItem";
+import NewConversation from "./NewConversation";
+import { useState } from "react";
 
 function ChatSidebar({
   conversations,
@@ -8,6 +10,21 @@ function ChatSidebar({
   loading,
   error,
 }) {
+  const [showNewConversation, setShowNewConversation] = useState(false);
+
+  // if (showNewConversation) {
+  //   return <NewConversation onBack={() => setShowNewConversation(false)} />;
+  // }
+
+  if (showNewConversation) {
+    return (
+      <NewConversation
+        onBack={() => setShowNewConversation(false)}
+        onSelectConversation={onSelectConversation}
+      />
+    );
+  }
+
   return (
     <div className="flex h-full flex-col">
       {/* Header */}
@@ -15,15 +32,23 @@ function ChatSidebar({
         <div className="mb-4 flex items-center justify-between">
           <h1 className="text-xl font-bold text-gray-900">ChatVerse</h1>
 
-          <button
+          {/* <button
             type="button"
             className="rounded-lg p-2 text-gray-500 transition hover:bg-gray-100 hover:text-gray-700"
           >
             <FiMoreVertical className="h-5 w-5" />
+          </button> */}
+          <button
+            type="button"
+            onClick={() => setShowNewConversation(true)}
+            className="rounded-lg p-2 text-gray-500 transition hover:bg-gray-100"
+            title="New conversation"
+          >
+            <FiEdit3 className="h-5 w-5" />
           </button>
         </div>
 
-        {/* Search */}
+        {/* Search existing conversations */}
         <div className="relative">
           <FiSearch className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" />
 
