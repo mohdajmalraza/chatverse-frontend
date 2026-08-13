@@ -1,9 +1,10 @@
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useChat } from "../hooks/useChat";
+import { socket } from "../socket/socket";
 
 import ChatSidebar from "../components/chat/ChatSidebar";
 import ChatWindow from "../components/chat/ChatWindow";
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
 
 function ChatPage() {
   const {
@@ -17,22 +18,34 @@ function ChatPage() {
   const [showChat, setShowChat] = useState(false);
   const navigate = useNavigate();
 
-  // const handleSelectConversation = async (conversation) => {
-  //   await selectConversation(conversation);
-
-  //   // On mobile, show ChatWindow after selecting a conversation
-  //   setShowChat(true);
-  // };
-
   const handleSelectConversation = (conversation) => {
     navigate(`/chat?conversation=${conversation.conversationId}`);
 
     selectConversation(conversation);
+    setShowChat(true);
   };
 
   const handleBackToSidebar = () => {
     setShowChat(false);
   };
+
+  useEffect(() => {
+    socket.connect(); // Manually establishes the Socket.IO connection
+
+    socket.on("connect", () => {
+      console.log("Authenticated socket connected:", socket.id);
+    });
+
+    socket.on("connect_error", (error) => {
+      console.error("Socket authentication failed:", error.message);
+    });
+
+    return () => {
+      socket.off("connect");
+      socket.off("connect_error");
+      socket.disconnect();
+    };
+  }, []);
 
   return (
     <div className="h-screen bg-gray-100">
