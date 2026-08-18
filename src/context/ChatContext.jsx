@@ -1,30 +1,30 @@
-import { createContext, useCallback, useEffect, useState } from "react";
+import { createContext, useEffect, useState } from "react";
 
 import {
   getConversations,
   createConversation as createConversationApi,
 } from "../api/conversation.api";
-
-import {
-  getMessageHistory,
-  sendMessage as sendMessageApi,
-} from "../api/message.api";
+import { getMessageHistory } from "../api/message.api";
+import { socket } from "../socket/socket";
+import { useAuth } from "../hooks/useAuth";
 
 export const ChatContext = createContext();
 
 export const ChatProvider = ({ children }) => {
+  const { user, loading: authLoading } = useAuth();
+
   const [conversations, setConversations] = useState([]);
   const [selectedConversation, setSelectedConversation] = useState(null);
   const [messages, setMessages] = useState([]);
+
   const [loadingConversations, setLoadingConversations] = useState(false);
   const [loadingMessages, setLoadingMessages] = useState(false);
   const [sendingMessage, setSendingMessage] = useState(false);
+
   const [error, setError] = useState("");
 
-  /*
-   * Fetch all conversations
-   */
-  const fetchConversations = useCallback(async () => {
+  // Fetch conversations
+  const fetchConversations = async () => {
     try {
       setLoadingConversations(true);
       setError("");
@@ -46,19 +46,10 @@ export const ChatProvider = ({ children }) => {
     } finally {
       setLoadingConversations(false);
     }
-  }, []);
+  };
 
-  /*
-   * Fetch conversations when ChatProvider mounts
-   */
-  useEffect(() => {
-    fetchConversations();
-  }, [fetchConversations]);
-
-  /*
-   * Select conversation
-   */
-  const selectConversation = useCallback(async (conversation) => {
+  // Select conversation
+  const selectConversation = async (conversation) => {
     setSelectedConversation(conversation);
 
     setMessages([]);
@@ -81,123 +72,30 @@ export const ChatProvider = ({ children }) => {
     } finally {
       setLoadingMessages(false);
     }
-  }, []);
+  };
 
-  /*
-   * Send message
-   */
-  const sendMessage = useCallback(
-    async (text) => {
-      if (!selectedConversation?.conversationId || !text.trim()) {
-        return;
-      }
+  // Send message
+  const sendMessage = (text) => {
+    if (!selectedConversation?.conversationId || !text.trim()) {
+      return;
+    }
 
-      try {
-        setSendingMessage(true);
-        setError("");
+    if (!socket.connected) {
+      setError("Socket connection is not available.");
+      return;
+    }
 
-        const newMessage = await sendMessageApi(
-          selectedConversation.conversationId,
-          text.trim(),
-        );
+    setSendingMessage(true);
+    setError("");
 
-        setMessages((previousMessages) => [...previousMessages, newMessage]);
+    socket.emit("send_message", {
+      conversationId: selectedConversation.conversationId,
+      text: text.trim(),
+    });
+  };
 
-        /*
-         * Update last message in conversation list
-         */
-        // setConversations((previousConversations) =>
-        //   previousConversations.map((conversation) =>
-        //     conversation.conversationId === selectedConversation.conversationId
-        //       ? {
-        //           ...conversation,
-        //           lastMessage: newMessage,
-        //           updatedAt: newMessage.createdAt,
-        //         }
-        //       : conversation,
-        //   ),
-        // );
-
-        setConversations((previousConversations) => {
-          const updatedConversation = previousConversations.find(
-            (conversation) =>
-              conversation.conversationId ===
-              selectedConversation.conversationId,
-          );
-
-          if (!updatedConversation) {
-            return previousConversations;
-          }
-
-          const updated = {
-            ...updatedConversation,
-            lastMessage: newMessage,
-            updatedAt: newMessage.createdAt,
-          };
-
-          return [
-            updated,
-            ...previousConversations.filter(
-              (conversation) =>
-                conversation.conversationId !==
-                selectedConversation.conversationId,
-            ),
-          ];
-        });
-
-        return newMessage;
-      } catch (error) {
-        console.error(error);
-
-        setError(error.response?.data?.message || "Failed to send message.");
-
-        throw error;
-      } finally {
-        setSendingMessage(false);
-      }
-    },
-    [selectedConversation],
-  );
-
-  /*
-   * Create or get conversation
-   */
-  // const createConversation = useCallback(
-  //   async (receiverId) => {
-  //     try {
-  //       setError("");
-
-  //       const conversation = await createConversationApi(receiverId);
-
-  //       setConversations((previousConversations) => {
-  //         const exists = previousConversations.some(
-  //           (item) => item.conversationId === conversation.conversationId,
-  //         );
-
-  //         if (exists) {
-  //           return previousConversations;
-  //         }
-
-  //         return [conversation, ...previousConversations];
-  //       });
-
-  //       await selectConversation(conversation);
-
-  //       return conversation;
-  //     } catch (error) {
-  //       console.error(error);
-
-  //       setError(
-  //         error.response?.data?.message || "Failed to create conversation.",
-  //       );
-
-  //       throw error;
-  //     }
-  //   },
-  //   [selectConversation],
-  // );
-
-  const createConversation = useCallback(async (receiverId) => {
+  // Create or get conversation
+  const createConversation = async (receiverId) => {
     try {
       setError("");
 
@@ -225,17 +123,150 @@ export const ChatProvider = ({ children }) => {
 
       throw error;
     }
-  }, []);
+  };
 
-  /*
-   * Clear chat state
-   */
-  const clearChat = useCallback(() => {
+  // Clear chat state
+  const clearChat = () => {
     setConversations([]);
     setSelectedConversation(null);
     setMessages([]);
     setError("");
-  }, []);
+  };
+
+  // Fetch conversations after authentication
+  useEffect(() => {
+    if (authLoading || !user) {
+      return;
+    }
+
+    fetchConversations();
+  }, [authLoading, user]);
+
+  // Socket.IO
+  useEffect(() => {
+    if (authLoading || !user) {
+      return;
+    }
+
+    const handleConnect = () => {
+      console.log("Authenticated socket connected:", socket.id);
+    };
+
+    const handleConnectError = (error) => {
+      console.error("Socket authentication failed:", error.message);
+
+      setError(error.message || "Socket connection failed.");
+    };
+
+    const handleDisconnect = (reason) => {
+      console.log("Socket disconnected:", reason);
+    };
+
+    const handleMessageSent = (message) => {
+      // Add message to currently open conversation
+      if (selectedConversation?.conversationId === message.conversation) {
+        setMessages((previousMessages) => [...previousMessages, message]);
+      }
+
+      // Update conversation list
+      setConversations((previousConversations) => {
+        const existingConversation = previousConversations.find(
+          (conversation) =>
+            conversation.conversationId === message.conversation,
+        );
+
+        if (!existingConversation) {
+          return previousConversations;
+        }
+
+        const updatedConversation = {
+          ...existingConversation,
+          lastMessage: message,
+          updatedAt: message.createdAt,
+        };
+
+        return [
+          updatedConversation,
+          ...previousConversations.filter(
+            (conversation) =>
+              conversation.conversationId !== message.conversation,
+          ),
+        ];
+      });
+
+      setSendingMessage(false);
+    };
+
+    const handleReceiveMessage = (message) => {
+      // Add message to currently open conversation
+      if (selectedConversation?.conversationId === message.conversation) {
+        setMessages((previousMessages) => [...previousMessages, message]);
+      }
+
+      // Update conversation list
+      setConversations((previousConversations) => {
+        const existingConversation = previousConversations.find(
+          (conversation) =>
+            conversation.conversationId === message.conversation,
+        );
+
+        if (!existingConversation) {
+          return previousConversations;
+        }
+
+        const updatedConversation = {
+          ...existingConversation,
+          lastMessage: message,
+          updatedAt: message.createdAt,
+        };
+
+        return [
+          updatedConversation,
+          ...previousConversations.filter(
+            (conversation) =>
+              conversation.conversationId !== message.conversation,
+          ),
+        ];
+      });
+    };
+
+    const handleMessageError = (error) => {
+      console.error("Socket message error:", error);
+
+      setError(error.message || "Failed to send message.");
+
+      setSendingMessage(false);
+    };
+
+    socket.on("connect", handleConnect);
+    socket.on("connect_error", handleConnectError);
+    socket.on("disconnect", handleDisconnect);
+
+    socket.on("message_sent", handleMessageSent);
+    socket.on("receive_message", handleReceiveMessage);
+    socket.on("message_error", handleMessageError);
+
+    socket.connect();
+
+    return () => {
+      socket.off("connect", handleConnect);
+      socket.off("connect_error", handleConnectError);
+      socket.off("disconnect", handleDisconnect);
+
+      socket.off("message_sent", handleMessageSent);
+      socket.off("receive_message", handleReceiveMessage);
+      socket.off("message_error", handleMessageError);
+
+      socket.disconnect();
+    };
+  }, [authLoading, user, selectedConversation]);
+
+  // Clear chat state when user becomes unauthenticated
+  useEffect(() => {
+    if (!authLoading && !user) {
+      clearChat();
+    }
+  }, [authLoading, user]);
 
   return (
     <ChatContext.Provider
@@ -261,3 +292,307 @@ export const ChatProvider = ({ children }) => {
     </ChatContext.Provider>
   );
 };
+
+// import { createContext, useCallback, useEffect, useRef, useState } from "react";
+
+// import {
+//   getConversations,
+//   createConversation as createConversationApi,
+// } from "../api/conversation.api";
+// import { getMessageHistory } from "../api/message.api";
+// import { socket } from "../socket/socket";
+// import { useAuth } from "../hooks/useAuth";
+
+// export const ChatContext = createContext();
+
+// export const ChatProvider = ({ children }) => {
+//   const { user, loading: authLoading } = useAuth();
+
+//   const [conversations, setConversations] = useState([]);
+//   const [selectedConversation, setSelectedConversation] = useState(null);
+//   const [messages, setMessages] = useState([]);
+
+//   const [loadingConversations, setLoadingConversations] = useState(false);
+//   const [loadingMessages, setLoadingMessages] = useState(false);
+//   const [sendingMessage, setSendingMessage] = useState(false);
+
+//   const [error, setError] = useState("");
+
+//   const selectedConversationRef = useRef(null);
+
+//   // Fetch conversations
+//   const fetchConversations = useCallback(async () => {
+//     try {
+//       setLoadingConversations(true);
+//       setError("");
+
+//       const data = await getConversations();
+
+//       setConversations(data);
+
+//       return data;
+//     } catch (error) {
+//       console.error(error);
+
+//       const message =
+//         error.response?.data?.message || "Failed to load conversations.";
+
+//       setError(message);
+
+//       return [];
+//     } finally {
+//       setLoadingConversations(false);
+//     }
+//   }, []);
+
+//   // Select conversation
+//   const selectConversation = useCallback(async (conversation) => {
+//     setSelectedConversation(conversation);
+
+//     selectedConversationRef.current = conversation;
+
+//     setMessages([]);
+
+//     if (!conversation?.conversationId) {
+//       return;
+//     }
+
+//     try {
+//       setLoadingMessages(true);
+//       setError("");
+
+//       const data = await getMessageHistory(conversation.conversationId);
+
+//       setMessages(data);
+//     } catch (error) {
+//       console.error(error);
+
+//       setError(error.response?.data?.message || "Failed to load messages.");
+//     } finally {
+//       setLoadingMessages(false);
+//     }
+//   }, []);
+
+//   // Send message
+//   const sendMessage = useCallback(
+//     (text) => {
+//       if (!selectedConversation?.conversationId || !text.trim()) {
+//         return;
+//       }
+
+//       if (!socket.connected) {
+//         setError("Socket connection is not available.");
+//         return;
+//       }
+
+//       setSendingMessage(true);
+//       setError("");
+
+//       socket.emit("send_message", {
+//         conversationId: selectedConversation.conversationId,
+//         text: text.trim(),
+//       });
+//     },
+//     [selectedConversation],
+//   );
+
+//   // Create or get conversation
+//   const createConversation = useCallback(async (receiverId) => {
+//     try {
+//       setError("");
+
+//       const conversation = await createConversationApi(receiverId);
+
+//       setConversations((previousConversations) => {
+//         const existingConversation = previousConversations.find(
+//           (item) => item.conversationId === conversation.conversationId,
+//         );
+
+//         if (existingConversation) {
+//           return previousConversations;
+//         }
+
+//         return [conversation, ...previousConversations];
+//       });
+
+//       return conversation;
+//     } catch (error) {
+//       console.error(error);
+
+//       setError(
+//         error.response?.data?.message || "Failed to create conversation.",
+//       );
+
+//       throw error;
+//     }
+//   }, []);
+
+//   // Clear chat state
+//   const clearChat = useCallback(() => {
+//     setConversations([]);
+//     setSelectedConversation(null);
+//     selectedConversationRef.current = null;
+//     setMessages([]);
+//     setError("");
+//   }, []);
+
+//   useEffect(() => {
+//     if (authLoading || !user) {
+//       return;
+//     }
+
+//     fetchConversations();
+//   }, [authLoading, user, fetchConversations]);
+
+//   useEffect(() => {
+//     if (authLoading || !user) {
+//       return;
+//     }
+
+//     const handleConnect = () => {
+//       console.log("Authenticated socket connected:", socket.id);
+//     };
+
+//     const handleConnectError = (error) => {
+//       console.error("Socket authentication failed:", error.message);
+
+//       setError(error.message || "Socket connection failed.");
+//     };
+
+//     const handleDisconnect = (reason) => {
+//       console.log("Socket disconnected:", reason);
+//     };
+
+//     const handleMessageSent = (message) => {
+//       const currentConversation = selectedConversationRef.current;
+
+//       // Add message to currently open conversation
+//       if (currentConversation?.conversationId === message.conversation) {
+//         setMessages((previousMessages) => [...previousMessages, message]);
+//       }
+
+//       // Update conversation list
+//       setConversations((previousConversations) => {
+//         const existingConversation = previousConversations.find(
+//           (conversation) =>
+//             conversation.conversationId === message.conversation,
+//         );
+
+//         if (!existingConversation) {
+//           return previousConversations;
+//         }
+
+//         const updatedConversation = {
+//           ...existingConversation,
+//           lastMessage: message,
+//           updatedAt: message.createdAt,
+//         };
+
+//         return [
+//           updatedConversation,
+//           ...previousConversations.filter(
+//             (conversation) =>
+//               conversation.conversationId !== message.conversation,
+//           ),
+//         ];
+//       });
+
+//       setSendingMessage(false);
+//     };
+
+//     const handleReceiveMessage = (message) => {
+//       const currentConversation = selectedConversationRef.current;
+
+//       // Add message to currently open conversation
+//       if (currentConversation?.conversationId === message.conversation) {
+//         setMessages((previousMessages) => [...previousMessages, message]);
+//       }
+
+//       // Update conversation list
+//       setConversations((previousConversations) => {
+//         const existingConversation = previousConversations.find(
+//           (conversation) =>
+//             conversation.conversationId === message.conversation,
+//         );
+
+//         if (!existingConversation) {
+//           return previousConversations;
+//         }
+
+//         const updatedConversation = {
+//           ...existingConversation,
+//           lastMessage: message,
+//           updatedAt: message.createdAt,
+//         };
+
+//         return [
+//           updatedConversation,
+//           ...previousConversations.filter(
+//             (conversation) =>
+//               conversation.conversationId !== message.conversation,
+//           ),
+//         ];
+//       });
+//     };
+
+//     const handleMessageError = (error) => {
+//       console.error("Socket message error:", error);
+
+//       setError(error.message || "Failed to send message.");
+//       setSendingMessage(false);
+//     };
+
+//     socket.on("connect", handleConnect);
+//     socket.on("connect_error", handleConnectError);
+//     socket.on("disconnect", handleDisconnect);
+
+//     socket.on("message_sent", handleMessageSent);
+//     socket.on("receive_message", handleReceiveMessage);
+//     socket.on("message_error", handleMessageError);
+
+//     socket.connect();
+
+//     return () => {
+//       socket.off("connect", handleConnect);
+//       socket.off("connect_error", handleConnectError);
+//       socket.off("disconnect", handleDisconnect);
+
+//       socket.off("message_sent", handleMessageSent);
+//       socket.off("receive_message", handleReceiveMessage);
+//       socket.off("message_error", handleMessageError);
+
+//       socket.disconnect();
+//     };
+//   }, [authLoading, user]);
+
+//   // Clear chat state when user becomes unauthenticated
+//   useEffect(() => {
+//     if (!authLoading && !user) {
+//       clearChat();
+//     }
+//   }, [authLoading, user, clearChat]);
+
+//   return (
+//     <ChatContext.Provider
+//       value={{
+//         conversations,
+//         selectedConversation,
+//         messages,
+
+//         loadingConversations,
+//         loadingMessages,
+//         sendingMessage,
+
+//         error,
+
+//         fetchConversations,
+//         selectConversation,
+//         sendMessage,
+//         createConversation,
+//         clearChat,
+//       }}
+//     >
+//       {children}
+//     </ChatContext.Provider>
+//   );
+// };

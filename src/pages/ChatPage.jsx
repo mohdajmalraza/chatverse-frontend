@@ -1,7 +1,6 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useChat } from "../hooks/useChat";
-import { socket } from "../socket/socket";
 
 import ChatSidebar from "../components/chat/ChatSidebar";
 import ChatWindow from "../components/chat/ChatWindow";
@@ -29,23 +28,27 @@ function ChatPage() {
     setShowChat(false);
   };
 
-  useEffect(() => {
-    socket.connect(); // Manually establishes the Socket.IO connection
+  // useEffect(() => {
+  //   socket.connect(); // Manually establishes the Socket.IO connection
 
-    socket.on("connect", () => {
-      console.log("Authenticated socket connected:", socket.id);
-    });
+  //   const handleConnect = () => {
+  //     console.log("Authenticated socket connected:", socket.id);
+  //   };
 
-    socket.on("connect_error", (error) => {
-      console.error("Socket authentication failed:", error.message);
-    });
+  //   const handleConnectError = (error) => {
+  //     console.error("Socket authentication failed:", error.message);
+  //   };
 
-    return () => {
-      socket.off("connect");
-      socket.off("connect_error");
-      socket.disconnect();
-    };
-  }, []);
+  //   socket.on("connect", handleConnect);
+  //   socket.on("connect_error", handleConnectError);
+
+  //   return () => {
+  //     socket.off("connect", handleConnect);
+  //     socket.off("connect_error", handleConnectError);
+
+  //     socket.disconnect();
+  //   };
+  // }, []);
 
   return (
     <div className="h-screen bg-gray-100">
