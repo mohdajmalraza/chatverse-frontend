@@ -1,4 +1,4 @@
-import { createContext, useEffect, useState } from "react";
+import { createContext, useEffect, useRef, useState } from "react";
 
 import {
   getConversations,
@@ -22,6 +22,8 @@ export const ChatProvider = ({ children }) => {
   const [sendingMessage, setSendingMessage] = useState(false);
 
   const [error, setError] = useState("");
+
+  const selectedConversationRef = useRef(null);
 
   // Fetch conversations
   const fetchConversations = async () => {
@@ -51,6 +53,8 @@ export const ChatProvider = ({ children }) => {
   // Select conversation
   const selectConversation = async (conversation) => {
     setSelectedConversation(conversation);
+
+    selectedConversationRef.current = conversation;
 
     setMessages([]);
 
@@ -163,8 +167,10 @@ export const ChatProvider = ({ children }) => {
     };
 
     const handleMessageSent = (message) => {
+      const currentConversation = selectedConversationRef.current;
+
       // Add message to currently open conversation
-      if (selectedConversation?.conversationId === message.conversation) {
+      if (currentConversation?.conversationId === message.conversation) {
         setMessages((previousMessages) => [...previousMessages, message]);
       }
 
@@ -198,8 +204,10 @@ export const ChatProvider = ({ children }) => {
     };
 
     const handleReceiveMessage = (message) => {
+      const currentConversation = selectedConversationRef.current;
+
       // Add message to currently open conversation
-      if (selectedConversation?.conversationId === message.conversation) {
+      if (currentConversation?.conversationId === message.conversation) {
         setMessages((previousMessages) => [...previousMessages, message]);
       }
 
@@ -259,7 +267,7 @@ export const ChatProvider = ({ children }) => {
 
       socket.disconnect();
     };
-  }, [authLoading, user, selectedConversation]);
+  }, [authLoading, user]);
 
   // Clear chat state when user becomes unauthenticated
   useEffect(() => {

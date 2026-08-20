@@ -28,28 +28,6 @@ function ChatPage() {
     setShowChat(false);
   };
 
-  // useEffect(() => {
-  //   socket.connect(); // Manually establishes the Socket.IO connection
-
-  //   const handleConnect = () => {
-  //     console.log("Authenticated socket connected:", socket.id);
-  //   };
-
-  //   const handleConnectError = (error) => {
-  //     console.error("Socket authentication failed:", error.message);
-  //   };
-
-  //   socket.on("connect", handleConnect);
-  //   socket.on("connect_error", handleConnectError);
-
-  //   return () => {
-  //     socket.off("connect", handleConnect);
-  //     socket.off("connect_error", handleConnectError);
-
-  //     socket.disconnect();
-  //   };
-  // }, []);
-
   return (
     <div className="h-screen bg-gray-100">
       <div className="mx-auto flex h-full max-w-7xl overflow-hidden bg-white shadow-sm">
