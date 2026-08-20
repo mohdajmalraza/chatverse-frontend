@@ -5,7 +5,7 @@ function ConversationItem({ conversation, selected, onClick }) {
     <button
       type="button"
       onClick={onClick}
-      className={`flex w-full items-center gap-3 border-b border-gray-100 px-4 py-3 text-left transition ${
+      className={`flex w-full items-center gap-3 px-4 py-3 text-left rounded-xl transition ${
         selected ? "bg-blue-50" : "hover:bg-gray-50"
       }`}
     >

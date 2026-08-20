@@ -18,7 +18,8 @@ function ChatPage() {
   const navigate = useNavigate();
 
   const handleSelectConversation = (conversation) => {
-    navigate(`/chat?conversation=${conversation.conversationId}`);
+    // navigate(`/chat?conversation=${conversation.conversationId}`);
+    navigate(`/chat`);
 
     selectConversation(conversation);
     setShowChat(true);

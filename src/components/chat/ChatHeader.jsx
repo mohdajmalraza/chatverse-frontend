@@ -1,4 +1,4 @@
-import { FiMoreVertical } from "react-icons/fi";
+import { FiArrowLeft, FiMoreVertical } from "react-icons/fi";
 import { IoCallOutline } from "react-icons/io5";
 
 function ChatHeader({ receiver, onBack }) {
@@ -9,23 +9,10 @@ function ChatHeader({ receiver, onBack }) {
         <button
           type="button"
           onClick={onBack}
-          className="rounded-full p-2 text-gray-600 hover:bg-gray-100 md:hidden"
+          className="rounded-full py-2 text-gray-600 hover:bg-gray-100 md:hidden"
           aria-label="Back to conversations"
         >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="h-5 w-5"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-            strokeWidth="2"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M15 19l-7-7 7-7"
-            />
-          </svg>
+          <FiArrowLeft className="h-5 w-5" />
         </button>
 
         {/* Avatar */}
@@ -58,6 +45,7 @@ function ChatHeader({ receiver, onBack }) {
         <button
           type="button"
           className="rounded-lg p-2.5 text-gray-500 transition hover:bg-gray-100 hover:text-gray-700"
+          title="Coming soon"
         >
           <IoCallOutline className="h-5 w-5" />
         </button>
@@ -66,6 +54,7 @@ function ChatHeader({ receiver, onBack }) {
         <button
           type="button"
           className="rounded-lg p-2.5 text-gray-500 transition hover:bg-gray-100 hover:text-gray-700"
+          title="Coming soon"
         >
           <FiMoreVertical className="h-5 w-5" />
         </button>
