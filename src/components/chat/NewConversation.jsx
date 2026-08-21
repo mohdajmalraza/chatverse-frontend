@@ -15,9 +15,7 @@ function NewConversation({ onBack, onSelectConversation }) {
 
   const [error, setError] = useState("");
 
-  /*
-   * Search users
-   */
+  // Search users
   useEffect(() => {
     const query = search.trim();
 
@@ -49,9 +47,7 @@ function NewConversation({ onBack, onSelectConversation }) {
     return () => clearTimeout(timer);
   }, [search]);
 
-  /*
-   * Start conversation
-   */
+  // Start conversation
   const handleUserClick = async (user) => {
     try {
       setCreatingConversation(true);
@@ -59,9 +55,7 @@ function NewConversation({ onBack, onSelectConversation }) {
 
       const conversation = await createConversation(user._id);
 
-      /*
-       * Tell ChatPage to open ChatWindow.
-       */
+      // Tell ChatPage to open ChatWindow.
       onSelectConversation(conversation);
       onBack();
     } catch (error) {
