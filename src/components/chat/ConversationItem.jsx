@@ -1,5 +1,16 @@
-function ConversationItem({ conversation, selected, onClick }) {
+function ConversationItem({ conversation, selected, isOnline, onClick }) {
   const receiver = conversation.receiver;
+
+  const getInitials = (name) => {
+    if (!name) return "U";
+
+    return name
+      .split(" ")
+      .map((word) => word[0])
+      .join("")
+      .slice(0, 2)
+      .toUpperCase();
+  };
 
   return (
     <button
@@ -11,15 +22,21 @@ function ConversationItem({ conversation, selected, onClick }) {
     >
       {/* Avatar */}
       <div className="relative flex-shrink-0">
-        <img
-          src={receiver?.avatar || "https://i.pravatar.cc/150?img=12"}
-          alt={receiver?.name || "User"}
-          className="h-12 w-12 rounded-full object-cover"
-        />
+        {receiver?.avatar ? (
+          <img
+            src={receiver.avatar}
+            alt={receiver?.name || "User"}
+            className="h-12 w-12 rounded-full object-cover"
+          />
+        ) : (
+          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-indigo-100 text-sm font-semibold text-indigo-600">
+            {getInitials(receiver?.name)}
+          </div>
+        )}
 
-        {/* {receiver?.online && (
-          <span className="absolute bottom-0 right-0 h-3.5 w-3.5 rounded-full border-2 border-white bg-green-500" />
-        )} */}
+        {isOnline && (
+          <span className="absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-white bg-green-500" />
+        )}
       </div>
 
       {/* Content */}

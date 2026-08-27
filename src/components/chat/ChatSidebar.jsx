@@ -1,12 +1,13 @@
 import { useState } from "react";
 import ConversationItem from "./ConversationItem";
 import NewConversation from "./NewConversation";
-import { FiSearch } from "react-icons/fi";
+import { FiMoreVertical, FiSearch } from "react-icons/fi";
 import { LuMessageSquareDiff } from "react-icons/lu";
 
 function ChatSidebar({
   conversations,
   selectedConversation,
+  onlineUsers,
   onSelectConversation,
   loading,
   error,
@@ -31,21 +32,32 @@ function ChatSidebar({
             Chat<span className="text-indigo-500">Verse</span>
           </h1>
 
-          <button
-            type="button"
-            onClick={() => setShowNewConversation(true)}
-            className="rounded-full p-3 text-gray-500 transition cursor-pointer hover:bg-indigo-50"
-            title="New chat"
-          >
-            <LuMessageSquareDiff className="h-6 w-6 text-indigo-500" />
-          </button>
+          <div className="flex items-center">
+            <button
+              type="button"
+              onClick={() => setShowNewConversation(true)}
+              className="rounded-full p-3 text-gray-500 transition cursor-pointer hover:bg-indigo-50"
+              title="New chat"
+            >
+              <LuMessageSquareDiff className="h-6 w-6 text-indigo-500" />
+            </button>
 
-          {/* <button
-            type="button"
-            className="rounded-lg p-2 text-gray-500 transition hover:bg-gray-100 hover:text-gray-700"
-          >
-            <FiMoreVertical className="h-5 w-5" />
-          </button> */}
+            <button
+              type="button"
+              title="Coming soon"
+              className="rounded-full p-3 text-gray-500 transition cursor-pointer hover:bg-gray-100 hover:text-gray-700"
+            >
+              <FiMoreVertical className="h-5 w-5" />
+            </button>
+
+            {/* <button
+              type="button"
+              title="Coming soon"
+              className="rounded-lg p-2 text-gray-500 transition cursor-pointer hover:bg-gray-100 hover:text-gray-700"
+            >
+              <FiMoreVertical className="h-5 w-5" />
+            </button> */}
+          </div>
         </div>
 
         {/* Search existing conversations */}
@@ -88,6 +100,7 @@ function ChatSidebar({
                 selectedConversation?.conversationId ===
                 conversation.conversationId
               }
+              isOnline={onlineUsers.has(conversation.receiver?._id?.toString())}
               onClick={() => onSelectConversation(conversation)}
             />
           ))}

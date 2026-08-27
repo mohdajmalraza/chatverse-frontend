@@ -1,7 +1,7 @@
 import { FiArrowLeft, FiMoreVertical } from "react-icons/fi";
 import { IoCallOutline } from "react-icons/io5";
 
-function ChatHeader({ receiver, onBack }) {
+function ChatHeader({ receiver, isOnline, onBack }) {
   return (
     <div className="flex items-center justify-between border-b border-gray-200 bg-white px-5 py-3">
       <div className="flex items-center gap-2">
@@ -23,8 +23,9 @@ function ChatHeader({ receiver, onBack }) {
             className="h-11 w-11 rounded-full object-cover"
           />
 
-          {/* Socket.IO will replace this */}
-          {/* <span className="absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-white bg-green-500" /> */}
+          {isOnline && (
+            <span className="absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-white bg-green-500" />
+          )}
         </div>
 
         {/* User info */}
@@ -33,9 +34,11 @@ function ChatHeader({ receiver, onBack }) {
             {receiver?.name}
           </h2>
 
-          {/* Socket.IO will replace this */}
-          <p className="text-xs text-gray-400">Offline</p>
-          {/* <p className="text-xs text-green-500">{receiver?.status}</p> */}
+          {isOnline ? (
+            <p className="text-xs text-green-500">Online</p>
+          ) : (
+            <p className="text-xs text-gray-400">Offline</p>
+          )}
         </div>
       </div>
 
@@ -44,7 +47,7 @@ function ChatHeader({ receiver, onBack }) {
         {/* Call */}
         <button
           type="button"
-          className="rounded-lg p-2.5 text-gray-500 transition hover:bg-gray-100 hover:text-gray-700"
+          className="rounded-full p-2.5 text-gray-500 transition hover:bg-gray-100 hover:text-gray-700"
           title="Coming soon"
         >
           <IoCallOutline className="h-5 w-5" />
@@ -53,7 +56,7 @@ function ChatHeader({ receiver, onBack }) {
         {/* More */}
         <button
           type="button"
-          className="rounded-lg p-2.5 text-gray-500 transition hover:bg-gray-100 hover:text-gray-700"
+          className="rounded-full p-2.5 text-gray-500 transition hover:bg-gray-100 hover:text-gray-700"
           title="Coming soon"
         >
           <FiMoreVertical className="h-5 w-5" />
