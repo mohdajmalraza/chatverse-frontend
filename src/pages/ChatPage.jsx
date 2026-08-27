@@ -10,6 +10,7 @@ function ChatPage() {
     conversations,
     selectedConversation,
     selectConversation,
+    onlineUsers,
     loadingConversations,
     error,
   } = useChat();
@@ -18,7 +19,6 @@ function ChatPage() {
   const navigate = useNavigate();
 
   const handleSelectConversation = (conversation) => {
-    // navigate(`/chat?conversation=${conversation.conversationId}`);
     navigate(`/chat`);
 
     selectConversation(conversation);
@@ -39,6 +39,7 @@ function ChatPage() {
           <ChatSidebar
             conversations={conversations}
             selectedConversation={selectedConversation}
+            onlineUsers={onlineUsers}
             onSelectConversation={handleSelectConversation}
             loading={loadingConversations}
             error={error}
@@ -49,7 +50,7 @@ function ChatPage() {
         <div
           className={`w-full flex-1 ${showChat ? "block" : "hidden"} md:block`}
         >
-          <ChatWindow onBack={handleBackToSidebar} />
+          <ChatWindow onlineUsers={onlineUsers} onBack={handleBackToSidebar} />
         </div>
       </div>
     </div>

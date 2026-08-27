@@ -7,6 +7,7 @@ import { LuMessageSquareDiff } from "react-icons/lu";
 function ChatSidebar({
   conversations,
   selectedConversation,
+  onlineUsers,
   onSelectConversation,
   loading,
   error,
@@ -88,6 +89,7 @@ function ChatSidebar({
                 selectedConversation?.conversationId ===
                 conversation.conversationId
               }
+              isOnline={onlineUsers.has(conversation.receiver?._id?.toString())}
               onClick={() => onSelectConversation(conversation)}
             />
           ))}

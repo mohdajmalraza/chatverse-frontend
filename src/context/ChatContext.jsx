@@ -17,6 +17,8 @@ export const ChatProvider = ({ children }) => {
   const [selectedConversation, setSelectedConversation] = useState(null);
   const [messages, setMessages] = useState([]);
 
+  const [onlineUsers, setOnlineUsers] = useState(new Set());
+
   const [loadingConversations, setLoadingConversations] = useState(false);
   const [loadingMessages, setLoadingMessages] = useState(false);
   const [sendingMessage, setSendingMessage] = useState(false);
@@ -164,6 +166,34 @@ export const ChatProvider = ({ children }) => {
 
     const handleDisconnect = (reason) => {
       console.log("Socket disconnected:", reason);
+
+      // Presence data is no longer reliable while disconnected
+      setOnlineUsers(new Set());
+    };
+
+    const handleOnlineUsers = ({ userIds }) => {
+      // console.log("Currently online users:", userIds);
+      setOnlineUsers(new Set(userIds));
+    };
+
+    const handleUserOnline = ({ userId }) => {
+      // console.log("User came online:", userId);
+      setOnlineUsers((previousUsers) => {
+        const updatedUsers = new Set(previousUsers);
+        updatedUsers.add(userId.toString());
+
+        return updatedUsers;
+      });
+    };
+
+    const handleUserOffline = ({ userId }) => {
+      // console.log("User went offline:", userId);
+      setOnlineUsers((previousUsers) => {
+        const updatedUsers = new Set(previousUsers);
+        updatedUsers.delete(userId.toString());
+
+        return updatedUsers;
+      });
     };
 
     const handleMessageSent = (message) => {
@@ -250,6 +280,10 @@ export const ChatProvider = ({ children }) => {
     socket.on("connect_error", handleConnectError);
     socket.on("disconnect", handleDisconnect);
 
+    socket.on("online_users", handleOnlineUsers);
+    socket.on("user_online", handleUserOnline);
+    socket.on("user_offline", handleUserOffline);
+
     socket.on("message_sent", handleMessageSent);
     socket.on("receive_message", handleReceiveMessage);
     socket.on("message_error", handleMessageError);
@@ -260,6 +294,10 @@ export const ChatProvider = ({ children }) => {
       socket.off("connect", handleConnect);
       socket.off("connect_error", handleConnectError);
       socket.off("disconnect", handleDisconnect);
+
+      socket.off("online_users", handleOnlineUsers);
+      socket.off("user_online", handleUserOnline);
+      socket.off("user_offline", handleUserOffline);
 
       socket.off("message_sent", handleMessageSent);
       socket.off("receive_message", handleReceiveMessage);
@@ -282,6 +320,7 @@ export const ChatProvider = ({ children }) => {
         conversations,
         selectedConversation,
         messages,
+        onlineUsers,
 
         loadingConversations,
         loadingMessages,
