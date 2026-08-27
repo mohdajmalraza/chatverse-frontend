@@ -1,8 +1,18 @@
+import { useEffect, useRef } from "react";
 import { useAuth } from "../../hooks/useAuth";
 import MessageBubble from "./MessageBubble";
 
 function MessageList({ messages, loading, error }) {
   const { user } = useAuth();
+
+  const bottomRef = useRef(null);
+
+  // Scroll to the latest message
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({
+      behavior: "smooth",
+    });
+  }, [messages]);
 
   return (
     <div className="flex-1 overflow-y-auto bg-gray-50 px-5 py-6">
@@ -32,6 +42,9 @@ function MessageList({ messages, loading, error }) {
               isMine={message.sender?._id === user?.id}
             />
           ))}
+
+        {/* Invisible element at the bottom */}
+        <div ref={bottomRef} />
       </div>
     </div>
   );
