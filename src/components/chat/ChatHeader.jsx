@@ -47,7 +47,7 @@ function ChatHeader({ receiver, isOnline, onBack }) {
         {/* Call */}
         <button
           type="button"
-          className="rounded-lg p-2.5 text-gray-500 transition hover:bg-gray-100 hover:text-gray-700"
+          className="rounded-full p-2.5 text-gray-500 transition hover:bg-gray-100 hover:text-gray-700"
           title="Coming soon"
         >
           <IoCallOutline className="h-5 w-5" />
@@ -56,7 +56,7 @@ function ChatHeader({ receiver, isOnline, onBack }) {
         {/* More */}
         <button
           type="button"
-          className="rounded-lg p-2.5 text-gray-500 transition hover:bg-gray-100 hover:text-gray-700"
+          className="rounded-full p-2.5 text-gray-500 transition hover:bg-gray-100 hover:text-gray-700"
           title="Coming soon"
         >
           <FiMoreVertical className="h-5 w-5" />

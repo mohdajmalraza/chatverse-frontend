@@ -15,13 +15,24 @@ function ChatWindow({ onlineUsers, onBack }) {
 
   if (!selectedConversation) {
     return (
-      <div className="flex h-full items-center justify-center bg-gray-50">
-        <div className="text-center">
-          <h2 className="text-lg font-semibold text-gray-700">
-            Welcome to ChatVerse
+      <div className="flex h-full items-center justify-center bg-gray-50 px-4">
+        <div className="flex w-full max-w-sm flex-col items-center text-center">
+          {/* Logo */}
+          <div className="mb-5 flex h-20 w-20 items-center justify-center overflow-hidden rounded-2xl sm:h-24 sm:w-24">
+            <img
+              src="/chat_verse.png"
+              alt="ChatVerse"
+              className="h-full w-full object-contain"
+            />
+          </div>
+
+          {/* Heading */}
+          <h2 className="text-xl font-semibold text-gray-800 sm:text-2xl">
+            Welcome to Chat<span className="text-indigo-500">Verse</span>
           </h2>
 
-          <p className="mt-1 text-sm text-gray-400">
+          {/* Description */}
+          <p className="mt-2 text-sm leading-relaxed text-gray-400 sm:text-base">
             Select a conversation to start chatting.
           </p>
         </div>
