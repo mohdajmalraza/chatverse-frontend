@@ -18,6 +18,7 @@ export const ChatProvider = ({ children }) => {
   const [messages, setMessages] = useState([]);
 
   const [onlineUsers, setOnlineUsers] = useState(new Set());
+  const [typingUsers, setTypingUsers] = useState(new Set());
 
   const [loadingConversations, setLoadingConversations] = useState(false);
   const [loadingMessages, setLoadingMessages] = useState(false);
@@ -59,6 +60,7 @@ export const ChatProvider = ({ children }) => {
     selectedConversationRef.current = conversation;
 
     setMessages([]);
+    setTypingUsers(new Set());
 
     if (!conversation?.conversationId) {
       return;
@@ -136,6 +138,7 @@ export const ChatProvider = ({ children }) => {
     setConversations([]);
     setSelectedConversation(null);
     setMessages([]);
+    setTypingUsers(new Set());
     setError("");
   };
 
@@ -189,6 +192,36 @@ export const ChatProvider = ({ children }) => {
     const handleUserOffline = ({ userId }) => {
       // console.log("User went offline:", userId);
       setOnlineUsers((previousUsers) => {
+        const updatedUsers = new Set(previousUsers);
+        updatedUsers.delete(userId.toString());
+
+        return updatedUsers;
+      });
+    };
+
+    const handleTypingStart = ({ conversationId, userId }) => {
+      const currentConversation = selectedConversationRef.current;
+
+      if (currentConversation?.conversationId !== conversationId) {
+        return;
+      }
+
+      setTypingUsers((previousUsers) => {
+        const updatedUsers = new Set(previousUsers);
+        updatedUsers.add(userId.toString());
+
+        return updatedUsers;
+      });
+    };
+
+    const handleTypingStop = ({ conversationId, userId }) => {
+      const currentConversation = selectedConversationRef.current;
+
+      if (currentConversation?.conversationId !== conversationId) {
+        return;
+      }
+
+      setTypingUsers((previousUsers) => {
         const updatedUsers = new Set(previousUsers);
         updatedUsers.delete(userId.toString());
 
@@ -284,6 +317,9 @@ export const ChatProvider = ({ children }) => {
     socket.on("user_online", handleUserOnline);
     socket.on("user_offline", handleUserOffline);
 
+    socket.on("typing:start", handleTypingStart);
+    socket.on("typing:stop", handleTypingStop);
+
     socket.on("message_sent", handleMessageSent);
     socket.on("receive_message", handleReceiveMessage);
     socket.on("message_error", handleMessageError);
@@ -298,6 +334,9 @@ export const ChatProvider = ({ children }) => {
       socket.off("online_users", handleOnlineUsers);
       socket.off("user_online", handleUserOnline);
       socket.off("user_offline", handleUserOffline);
+
+      socket.off("typing:start", handleTypingStart);
+      socket.off("typing:stop", handleTypingStop);
 
       socket.off("message_sent", handleMessageSent);
       socket.off("receive_message", handleReceiveMessage);
@@ -321,6 +360,7 @@ export const ChatProvider = ({ children }) => {
         selectedConversation,
         messages,
         onlineUsers,
+        typingUsers,
 
         loadingConversations,
         loadingMessages,
