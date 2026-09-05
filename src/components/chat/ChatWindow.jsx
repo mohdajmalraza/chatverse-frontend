@@ -10,13 +10,13 @@ function ChatWindow({ onlineUsers, onBack }) {
     loadingMessages,
     sendingMessage,
     error,
-    typingUsers,
+    typingConversations,
     sendMessage,
   } = useChat();
 
-  const receiverId = selectedConversation?.receiver?._id?.toString();
-
-  const isTyping = receiverId ? typingUsers.has(receiverId) : false;
+  const isTyping = selectedConversation
+    ? typingConversations.has(selectedConversation.conversationId)
+    : false;
 
   if (!selectedConversation) {
     return (

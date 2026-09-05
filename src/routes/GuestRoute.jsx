@@ -1,5 +1,6 @@
 import { Navigate, Outlet } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
+import LoadingScreen from "./LoadingScreen";
 
 const GuestRoute = () => {
   const { user, loading } = useAuth();

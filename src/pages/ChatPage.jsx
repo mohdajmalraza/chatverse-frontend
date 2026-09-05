@@ -11,6 +11,7 @@ function ChatPage() {
     selectedConversation,
     selectConversation,
     onlineUsers,
+    typingConversations,
     loadingConversations,
     error,
   } = useChat();
@@ -40,6 +41,7 @@ function ChatPage() {
             conversations={conversations}
             selectedConversation={selectedConversation}
             onlineUsers={onlineUsers}
+            typingConversations={typingConversations}
             onSelectConversation={handleSelectConversation}
             loading={loadingConversations}
             error={error}

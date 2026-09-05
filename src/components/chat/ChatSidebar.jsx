@@ -8,6 +8,7 @@ function ChatSidebar({
   conversations,
   selectedConversation,
   onlineUsers,
+  typingConversations,
   onSelectConversation,
   loading,
   error,
@@ -101,6 +102,7 @@ function ChatSidebar({
                 conversation.conversationId
               }
               isOnline={onlineUsers.has(conversation.receiver?._id?.toString())}
+              isTyping={typingConversations.has(conversation.conversationId)}
               onClick={() => onSelectConversation(conversation)}
             />
           ))}
