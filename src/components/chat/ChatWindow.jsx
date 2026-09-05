@@ -59,13 +59,8 @@ function ChatWindow({ onlineUsers, onBack }) {
         messages={messages}
         loading={loadingMessages}
         error={error}
+        isTyping={isTyping}
       />
-
-      {isTyping && (
-        <div className="px-4 pb-2 text-sm text-gray-400">
-          {selectedConversation.receiver?.name || "User"} is typing...
-        </div>
-      )}
 
       <MessageInput
         conversationId={selectedConversation.conversationId}
