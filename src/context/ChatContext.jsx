@@ -41,9 +41,6 @@ export const ChatProvider = ({ children }) => {
       if (socket.connected) {
         data.forEach((conversation) => {
           socket.emit("conversation:join", conversation.conversationId);
-          console.log(
-            `Socket joined the room using 'conversation:join': ${conversation.conversationId}`,
-          );
         });
       }
 
@@ -169,6 +166,9 @@ export const ChatProvider = ({ children }) => {
 
       // conversations.forEach((conversation) => {
       //   socket.emit("conversation:join", conversation.conversationId);
+      //   console.log(
+      //     `Socket joined the room using 'conversation:join': ${conversation.conversationId}`,
+      //   );
       // });
 
       // conversationsRef.current.forEach((conversation) => {
