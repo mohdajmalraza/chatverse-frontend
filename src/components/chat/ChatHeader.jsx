@@ -2,6 +2,17 @@ import { FiArrowLeft, FiMoreVertical } from "react-icons/fi";
 import { IoCallOutline } from "react-icons/io5";
 
 function ChatHeader({ receiver, isOnline, onBack }) {
+  const getInitials = (name) => {
+    if (!name) return "U";
+
+    return name
+      .split(" ")
+      .map((word) => word[0])
+      .join("")
+      .slice(0, 2)
+      .toUpperCase();
+  };
+
   return (
     <div className="flex items-center justify-between border-b border-gray-200 bg-white px-5 py-3">
       <div className="flex items-center gap-2">
@@ -17,11 +28,17 @@ function ChatHeader({ receiver, isOnline, onBack }) {
 
         {/* Avatar */}
         <div className="relative">
-          <img
-            src={receiver?.avatar || "https://i.pravatar.cc/150?img=12"}
-            alt={receiver?.name || "User"}
-            className="h-11 w-11 rounded-full object-cover"
-          />
+          {receiver?.avatar ? (
+            <img
+              src={receiver?.avatar || "https://i.pravatar.cc/150?img=12"}
+              alt={receiver?.name || "User"}
+              className="h-11 w-11 rounded-full object-cover"
+            />
+          ) : (
+            <div className="flex h-11 w-11 items-center justify-center rounded-full bg-indigo-100 text-sm font-semibold text-indigo-600">
+              {getInitials(receiver?.name)}
+            </div>
+          )}
 
           {isOnline && (
             <span className="absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-white bg-green-500" />

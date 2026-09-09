@@ -10,8 +10,13 @@ function ChatWindow({ onlineUsers, onBack }) {
     loadingMessages,
     sendingMessage,
     error,
+    typingConversations,
     sendMessage,
   } = useChat();
+
+  const isTyping = selectedConversation
+    ? typingConversations.has(selectedConversation.conversationId)
+    : false;
 
   if (!selectedConversation) {
     return (
@@ -54,9 +59,14 @@ function ChatWindow({ onlineUsers, onBack }) {
         messages={messages}
         loading={loadingMessages}
         error={error}
+        isTyping={isTyping}
       />
 
-      <MessageInput onSendMessage={sendMessage} sending={sendingMessage} />
+      <MessageInput
+        conversationId={selectedConversation.conversationId}
+        onSendMessage={sendMessage}
+        sending={sendingMessage}
+      />
     </div>
   );
 }

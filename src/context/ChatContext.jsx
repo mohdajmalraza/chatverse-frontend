@@ -18,6 +18,7 @@ export const ChatProvider = ({ children }) => {
   const [messages, setMessages] = useState([]);
 
   const [onlineUsers, setOnlineUsers] = useState(new Set());
+  const [typingConversations, setTypingConversations] = useState(new Set());
 
   const [loadingConversations, setLoadingConversations] = useState(false);
   const [loadingMessages, setLoadingMessages] = useState(false);
@@ -36,6 +37,12 @@ export const ChatProvider = ({ children }) => {
       const data = await getConversations();
 
       setConversations(data);
+
+      if (socket.connected) {
+        data.forEach((conversation) => {
+          socket.emit("conversation:join", conversation.conversationId);
+        });
+      }
 
       return data;
     } catch (error) {
@@ -156,6 +163,17 @@ export const ChatProvider = ({ children }) => {
 
     const handleConnect = () => {
       console.log("Authenticated socket connected:", socket.id);
+
+      // conversations.forEach((conversation) => {
+      //   socket.emit("conversation:join", conversation.conversationId);
+      //   console.log(
+      //     `Socket joined the room using 'conversation:join': ${conversation.conversationId}`,
+      //   );
+      // });
+
+      // conversationsRef.current.forEach((conversation) => {
+      //   socket.emit("conversation:join", conversation.conversationId);
+      // });
     };
 
     const handleConnectError = (error) => {
@@ -169,15 +187,14 @@ export const ChatProvider = ({ children }) => {
 
       // Presence data is no longer reliable while disconnected
       setOnlineUsers(new Set());
+      setTypingConversations(new Set());
     };
 
     const handleOnlineUsers = ({ userIds }) => {
-      // console.log("Currently online users:", userIds);
       setOnlineUsers(new Set(userIds));
     };
 
     const handleUserOnline = ({ userId }) => {
-      // console.log("User came online:", userId);
       setOnlineUsers((previousUsers) => {
         const updatedUsers = new Set(previousUsers);
         updatedUsers.add(userId.toString());
@@ -193,6 +210,34 @@ export const ChatProvider = ({ children }) => {
         updatedUsers.delete(userId.toString());
 
         return updatedUsers;
+      });
+    };
+
+    const handleTypingStart = ({ conversationId }) => {
+      if (!conversationId) {
+        return;
+      }
+
+      setTypingConversations((previousConversations) => {
+        const updatedConversations = new Set(previousConversations);
+
+        updatedConversations.add(conversationId);
+
+        return updatedConversations;
+      });
+    };
+
+    const handleTypingStop = ({ conversationId }) => {
+      if (!conversationId) {
+        return;
+      }
+
+      setTypingConversations((previousConversations) => {
+        const updatedConversations = new Set(previousConversations);
+
+        updatedConversations.delete(conversationId);
+
+        return updatedConversations;
       });
     };
 
@@ -284,6 +329,9 @@ export const ChatProvider = ({ children }) => {
     socket.on("user_online", handleUserOnline);
     socket.on("user_offline", handleUserOffline);
 
+    socket.on("typing:start", handleTypingStart);
+    socket.on("typing:stop", handleTypingStop);
+
     socket.on("message_sent", handleMessageSent);
     socket.on("receive_message", handleReceiveMessage);
     socket.on("message_error", handleMessageError);
@@ -298,6 +346,9 @@ export const ChatProvider = ({ children }) => {
       socket.off("online_users", handleOnlineUsers);
       socket.off("user_online", handleUserOnline);
       socket.off("user_offline", handleUserOffline);
+
+      socket.off("typing:start", handleTypingStart);
+      socket.off("typing:stop", handleTypingStop);
 
       socket.off("message_sent", handleMessageSent);
       socket.off("receive_message", handleReceiveMessage);
@@ -321,6 +372,7 @@ export const ChatProvider = ({ children }) => {
         selectedConversation,
         messages,
         onlineUsers,
+        typingConversations,
 
         loadingConversations,
         loadingMessages,

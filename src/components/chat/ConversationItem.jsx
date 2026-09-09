@@ -1,4 +1,10 @@
-function ConversationItem({ conversation, selected, isOnline, onClick }) {
+function ConversationItem({
+  conversation,
+  selected,
+  isOnline,
+  isTyping,
+  onClick,
+}) {
   const receiver = conversation.receiver;
 
   const getInitials = (name) => {
@@ -58,8 +64,14 @@ function ConversationItem({ conversation, selected, isOnline, onClick }) {
         </div>
 
         <div className="mt-1 flex items-center justify-between gap-2">
-          <p className="truncate text-sm text-gray-500">
-            {conversation.lastMessage?.text || "No messages yet"}
+          <p
+            className={`truncate text-sm ${
+              isTyping ? "font-medium text-green-500" : "text-gray-500"
+            }`}
+          >
+            {isTyping
+              ? `typing...`
+              : conversation.lastMessage?.text || "No messages yet"}
           </p>
 
           {/* {conversation.unreadCount > 0 && (
